@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	router := mux.NewRouter()
+	router := mux.NewRouter().StrictSlash(true)
 
 	configs.ConnectDB()
 

@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"mux-mongo-api/configs"
 	"mux-mongo-api/models"
 	"mux-mongo-api/responses"
@@ -35,7 +34,6 @@ func CreateUser() http.HandlerFunc {
 			response := responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": err.Error()}}
 			// Convert the response struct to JSON
 			json.NewEncoder(responseWriter).Encode(response)
-			fmt.Println(response)
 			return
 		}
 
@@ -232,6 +230,51 @@ func GetAllUsers() http.HandlerFunc {
 		}
 		responseWriter.WriteHeader(http.StatusOK)
 		response := responses.UserResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": users}}
+		json.NewEncoder(responseWriter).Encode(response)
+	}
+}
+
+func DeleteAllUsers() http.HandlerFunc {
+	return func(responseWriter http.ResponseWriter, reader *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		// Find all users
+		results, err := userCollection.Find(ctx, bson.M{})
+
+		if err != nil {
+			responseWriter.WriteHeader(http.StatusInternalServerError)
+			response := responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}}
+			json.NewEncoder(responseWriter).Encode(response)
+			return
+		}
+
+		var count int = 0
+		defer results.Close(ctx)
+		for results.Next(ctx) {
+			count += 1
+		}
+
+		// Delete all users
+		deleteResults, deleteErr := userCollection.DeleteMany(ctx, bson.M{})
+
+		if deleteErr != nil {
+			responseWriter.WriteHeader(http.StatusInternalServerError)
+			response := responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}}
+			json.NewEncoder(responseWriter).Encode(response)
+			return
+		}
+
+		if count != int(deleteResults.DeletedCount) {
+			// Set the API status code
+			responseWriter.WriteHeader(http.StatusBadRequest)
+			response := responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": "Did not delete all users"}}
+			json.NewEncoder(responseWriter).Encode(response)
+			return
+		}
+
+		responseWriter.WriteHeader(http.StatusOK)
+		response := responses.UserResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": "All users were successfully deleted"}}
 		json.NewEncoder(responseWriter).Encode(response)
 	}
 }
