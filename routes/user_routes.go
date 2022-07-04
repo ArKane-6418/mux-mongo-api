@@ -4,6 +4,7 @@ import (
 	"mux-mongo-api/controllers"
 
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func UserRoute(router *mux.Router) {
@@ -14,4 +15,5 @@ func UserRoute(router *mux.Router) {
 	router.HandleFunc("/user/{userId}", controllers.DeleteUser()).Methods("DELETE")
 	router.HandleFunc("/users", controllers.GetAllUsers()).Methods("GET")
 	router.HandleFunc("/users", controllers.DeleteAllUsers()).Methods("DELETE")
+	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 }

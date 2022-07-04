@@ -1,0 +1,100 @@
+basePath: /
+definitions:
+  models.User:
+    properties:
+      id:
+        type: string
+      location:
+        type: string
+      name:
+        type: string
+      title:
+        type: string
+    required:
+    - location
+    - name
+    - title
+    type: object
+  responses.UserResponse:
+    properties:
+      data:
+        additionalProperties: true
+        type: object
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+host: localhost:6060
+info:
+  contact:
+    email: support@swagger.io
+    name: Joshua Ong
+    url: http://www.swagger.io/support
+  description: This is a MongoDB-based Users API server
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Golang Mux Mongo Users API
+  version: "1.0"
+paths:
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "400":
+          description: There was an issue with the request body
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "500":
+          description: There was an internal server error
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+schemes:
+- http
+swagger: "2.0"

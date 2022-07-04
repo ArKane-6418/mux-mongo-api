@@ -19,6 +19,15 @@ import (
 var userCollection *mongo.Collection = configs.GetCollection(configs.DB, "users")
 var validate = validator.New()
 
+// CreateUser godoc
+// @Description Create a new user
+// @Accept json
+// @Produce json
+// @Param user body models.User true "User Data"
+// @Success 201 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Success"
+// @Failure 400 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "There was an issue with the request body"
+// @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "There was an internal server error"
+// @Router /user [post]
 func CreateUser() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
 		// Set timeout to 10 seconds
