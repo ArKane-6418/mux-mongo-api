@@ -2,9 +2,10 @@ package main
 
 import (
 	"log"
-	"mux-mongo-api/configs"
-	"mux-mongo-api/routes"
 	"net/http"
+
+	"github.com/ArKane-6418/mux-mongo-api/configs"
+	"github.com/ArKane-6418/mux-mongo-api/routes"
 
 	"github.com/gorilla/mux"
 )

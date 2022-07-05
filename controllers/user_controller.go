@@ -3,12 +3,14 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"mux-mongo-api/configs"
-	"mux-mongo-api/models"
-	"mux-mongo-api/responses"
 	"net/http"
 	"time"
 
+	"github.com/ArKane-6418/mux-mongo-api/configs"
+	"github.com/ArKane-6418/mux-mongo-api/models"
+	"github.com/ArKane-6418/mux-mongo-api/responses"
+
+	_ "github.com/ArKane-6418/mux-mongo-api/docs"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,10 +26,10 @@ var validate = validator.New()
 // @Accept json
 // @Produce json
 // @Param user body models.User true "User Data"
-// @Success 201 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Success"
-// @Failure 400 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "There was an issue with the request body"
-// @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "There was an internal server error"
-// @Router /user [post]
+// @Success 201 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Successfully create a new user"
+// @Failure 400 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "There is an issue with the request body"
+// @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Fail to create a new user"
+// @Router /user/ [post]
 func CreateUser() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
 		// Set timeout to 10 seconds
@@ -83,14 +85,30 @@ func CreateUser() http.HandlerFunc {
 	}
 }
 
+// GetUser godoc
+// @Description Get a user by userID
+// @Produce json
+// @Param userId path string true "User ID"
+// @Success 200 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Successfully get a user by their ID"
+// @Failure 400 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "user ID is not provided"
+// @Failure 404 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "A user with the specified ID could not be found"
+// @Router /user/{userId} [get]
 func GetUser() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
 		// Set timeout to 10 seconds
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		params := mux.Vars(reader)
 		userId := params["userId"]
+
 		var user models.User
 		defer cancel()
+
+		if userId == " " {
+			responseWriter.WriteHeader(http.StatusBadRequest)
+			response := responses.UserResponse{Status: http.StatusBadRequest, Message: "userid was not specified"}
+			json.NewEncoder(responseWriter).Encode(response)
+			return
+		}
 
 		objId, _ := primitive.ObjectIDFromHex(userId)
 
@@ -98,8 +116,8 @@ func GetUser() http.HandlerFunc {
 		err := userCollection.FindOne(ctx, bson.M{"id": objId}).Decode(&user)
 		if err != nil {
 			// Set the API status code
-			responseWriter.WriteHeader(http.StatusInternalServerError)
-			response := responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}}
+			responseWriter.WriteHeader(http.StatusNotFound)
+			response := responses.UserResponse{Status: http.StatusNotFound, Message: "error", Data: map[string]interface{}{"data": err.Error()}}
 			json.NewEncoder(responseWriter).Encode(response)
 			return
 		}
@@ -110,14 +128,33 @@ func GetUser() http.HandlerFunc {
 	}
 }
 
+// UpdateUser godoc
+// @Description Update a user's information by userID
+// @Accept json
+// @Produce json
+// @Param userId path primitive.ObjectID true "User ID"
+// @Success 200 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Successfully update a user"
+// @Failure 400 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "user ID is not provided or request body is improperly formatted"
+// @Failure 404 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "A user with the specified ID could not be found"
+// @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Fail to update a user's information"
+// @Router /user/{userId} [update]
+
 func UpdateUser() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
 		// Set timeout to 10 seconds
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		params := mux.Vars(reader)
 		userId := params["userId"]
+
 		var user models.User
 		defer cancel()
+
+		if userId == " " {
+			responseWriter.WriteHeader(http.StatusBadRequest)
+			response := responses.UserResponse{Status: http.StatusBadRequest, Message: "userid was not specified"}
+			json.NewEncoder(responseWriter).Encode(response)
+			return
+		}
 
 		objId, _ := primitive.ObjectIDFromHex(userId)
 
@@ -146,6 +183,15 @@ func UpdateUser() http.HandlerFunc {
 		update := bson.M{"name": user.Name, "location": user.Location, "title": user.Title}
 
 		// Find and update the appropriate user based on objId and handle any errors
+		err := userCollection.FindOne(ctx, bson.M{"id": objId}).Decode(&user)
+		if err != nil {
+			// Set the API status code
+			responseWriter.WriteHeader(http.StatusNotFound)
+			response := responses.UserResponse{Status: http.StatusNotFound, Message: "error", Data: map[string]interface{}{"data": err.Error()}}
+			json.NewEncoder(responseWriter).Encode(response)
+			return
+		}
+
 		result, err := userCollection.UpdateOne(ctx, bson.M{"id": objId}, bson.M{"$set": update})
 		if err != nil {
 			// Set the API status code
@@ -176,13 +222,31 @@ func UpdateUser() http.HandlerFunc {
 	}
 }
 
+// DeleteUser godoc
+// @Description Update a user's information by userID
+// @Produce json
+// @Param userId path primitive.ObjectID true "User ID"
+// @Success 200 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Successfully delete a user"
+// @Failure 400 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "user ID is not provided"
+// @Failure 404 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "A user with the specified ID could not be found"
+// @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Fail to delete a user"
+// @Router /user/{userId}/ [delete]
+
 func DeleteUser() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
 		// Set timeout to 10 seconds
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		params := mux.Vars(reader)
 		userId := params["userId"]
+
 		defer cancel()
+
+		if userId == " " {
+			responseWriter.WriteHeader(http.StatusBadRequest)
+			response := responses.UserResponse{Status: http.StatusBadRequest, Message: "userid was not specified"}
+			json.NewEncoder(responseWriter).Encode(response)
+			return
+		}
 
 		objId, _ := primitive.ObjectIDFromHex(userId)
 
@@ -208,6 +272,13 @@ func DeleteUser() http.HandlerFunc {
 		json.NewEncoder(responseWriter).Encode(response)
 	}
 }
+
+// GetAllUsers godoc
+// @Description Retrieve all users from the database
+// @Produce json
+// @Success 200 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Successfully retrieve all users"
+// @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Fail to retrieve all users"
+// @Router /users/ [get]
 
 func GetAllUsers() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
@@ -243,6 +314,13 @@ func GetAllUsers() http.HandlerFunc {
 	}
 }
 
+// DeleteAllUsers godoc
+// @Description Delete all users from the database
+// @Produce json
+// @Success 200 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Successfully delete all users"
+// @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Fail to delete all users"
+// @Router /users/ [delete]
+
 func DeleteAllUsers() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -276,8 +354,8 @@ func DeleteAllUsers() http.HandlerFunc {
 
 		if count != int(deleteResults.DeletedCount) {
 			// Set the API status code
-			responseWriter.WriteHeader(http.StatusBadRequest)
-			response := responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": "Did not delete all users"}}
+			responseWriter.WriteHeader(http.StatusInternalServerError)
+			response := responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": "Did not delete all users"}}
 			json.NewEncoder(responseWriter).Encode(response)
 			return
 		}

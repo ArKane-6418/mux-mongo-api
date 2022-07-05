@@ -38,7 +38,7 @@ info:
   title: Golang Mux Mongo Users API
   version: "1.0"
 paths:
-  /user:
+  /user/:
     post:
       consumes:
       - application/json
@@ -54,7 +54,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: Success
+          description: Successfully create a new user
           schema:
             allOf:
             - $ref: '#/definitions/responses.UserResponse'
@@ -68,7 +68,7 @@ paths:
                   type: integer
               type: object
         "400":
-          description: There was an issue with the request body
+          description: There is an issue with the request body
           schema:
             allOf:
             - $ref: '#/definitions/responses.UserResponse'
@@ -82,7 +82,61 @@ paths:
                   type: integer
               type: object
         "500":
-          description: There was an internal server error
+          description: Fail to create a new user
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+  /user/{userId}:
+    get:
+      description: Get a user by userID
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully get a user by their ID
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "400":
+          description: user ID is not provided
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "404":
+          description: A user with the specified ID could not be found
           schema:
             allOf:
             - $ref: '#/definitions/responses.UserResponse'
