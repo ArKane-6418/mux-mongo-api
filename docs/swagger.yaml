@@ -38,7 +38,7 @@ info:
   title: Golang Mux Mongo Users API
   version: "1.0"
 paths:
-  /user/:
+  /user:
     post:
       consumes:
       - application/json
@@ -137,6 +137,210 @@ paths:
               type: object
         "404":
           description: A user with the specified ID could not be found
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+    put:
+      consumes:
+      - application/json
+      description: Update a user's information by userID
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully update a user
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "400":
+          description: user ID is not provided or request body is improperly formatted
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "404":
+          description: A user with the specified ID could not be found
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "500":
+          description: Fail to update a user's information
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+  /user/{userId}/:
+    delete:
+      description: Update a user's information by userID
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully delete a user
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "400":
+          description: user ID is not provided
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "404":
+          description: A user with the specified ID could not be found
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "500":
+          description: Fail to delete a user
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+  /users/:
+    delete:
+      description: Delete all users from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully delete all users
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "500":
+          description: Fail to delete all users
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+    get:
+      description: Retrieve all users from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieve all users
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.UserResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+                message:
+                  type: string
+                status:
+                  type: integer
+              type: object
+        "500":
+          description: Fail to retrieve all users
           schema:
             allOf:
             - $ref: '#/definitions/responses.UserResponse'

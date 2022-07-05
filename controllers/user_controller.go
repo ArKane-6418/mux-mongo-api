@@ -29,7 +29,7 @@ var validate = validator.New()
 // @Success 201 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Successfully create a new user"
 // @Failure 400 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "There is an issue with the request body"
 // @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Fail to create a new user"
-// @Router /user/ [post]
+// @Router /user [post]
 func CreateUser() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
 		// Set timeout to 10 seconds
@@ -132,13 +132,12 @@ func GetUser() http.HandlerFunc {
 // @Description Update a user's information by userID
 // @Accept json
 // @Produce json
-// @Param userId path primitive.ObjectID true "User ID"
+// @Param userId path string true "User ID"
 // @Success 200 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Successfully update a user"
 // @Failure 400 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "user ID is not provided or request body is improperly formatted"
 // @Failure 404 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "A user with the specified ID could not be found"
 // @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Fail to update a user's information"
-// @Router /user/{userId} [update]
-
+// @Router /user/{userId} [put]
 func UpdateUser() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
 		// Set timeout to 10 seconds
@@ -225,13 +224,12 @@ func UpdateUser() http.HandlerFunc {
 // DeleteUser godoc
 // @Description Update a user's information by userID
 // @Produce json
-// @Param userId path primitive.ObjectID true "User ID"
+// @Param userId path string true "User ID"
 // @Success 200 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Successfully delete a user"
 // @Failure 400 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "user ID is not provided"
 // @Failure 404 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "A user with the specified ID could not be found"
 // @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Fail to delete a user"
 // @Router /user/{userId}/ [delete]
-
 func DeleteUser() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
 		// Set timeout to 10 seconds
@@ -279,7 +277,6 @@ func DeleteUser() http.HandlerFunc {
 // @Success 200 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Successfully retrieve all users"
 // @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Fail to retrieve all users"
 // @Router /users/ [get]
-
 func GetAllUsers() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -320,7 +317,6 @@ func GetAllUsers() http.HandlerFunc {
 // @Success 200 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Successfully delete all users"
 // @Failure 500 {object} responses.UserResponse{status=int,message=string,data=map[string]interface{}} "Fail to delete all users"
 // @Router /users/ [delete]
-
 func DeleteAllUsers() http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, reader *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
